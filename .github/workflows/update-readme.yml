@@ -1,0 +1,37 @@
+name: Update README gallery
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - '*.{jpg,jpeg,png,webp,gif,bmp}'
+      - 'generate-readme.ps1'
+
+permissions:
+  contents: write
+
+jobs:
+  update-readme:
+    # Skip pushes made by this workflow itself to avoid an infinite loop
+    if: github.actor != 'github-actions[bot]'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Generate README
+        shell: pwsh
+        run: ./generate-readme.ps1
+
+      - name: Commit and push if changed
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add README.md
+          if git diff --cached --quiet; then
+            echo "README already up to date — nothing to commit"
+          else
+            git commit -m "Auto-update README gallery"
+            git push
+          fi
+          git log --oneline -3
