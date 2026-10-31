@@ -34,4 +34,8 @@ $out = $newContent | ForEach-Object {
 }
 
 $out | Set-Content -LiteralPath $readme -Encoding utf8
+# Strip the BOM Windows PowerShell adds with -Encoding utf8
+$raw = Get-Content -Raw -LiteralPath $readme
+if ($raw[0] -eq [char]0xFEFF) { $raw = $raw.TrimStart([char]0xFEFF) }
+[IO.File]::WriteAllText((Resolve-Path -LiteralPath $readme), $raw, (New-Object System.Text.UTF8Encoding $false))
 Write-Host "README.md updated: $count wallpapers"
